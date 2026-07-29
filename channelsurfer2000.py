@@ -18395,6 +18395,7 @@ class WeatherFallbackWidget(QWidget):
 class VideoWindow(QWidget):
     channelUpRequested = Signal()
     channelDownRequested = Signal()
+    closeRequested = Signal()
     guideRequested = Signal()
     guideUpRequested = Signal()
     guideDownRequested = Signal()
@@ -18436,6 +18437,28 @@ class VideoWindow(QWidget):
         self.setStyleSheet("background-color: black;")
         self.setWindowFlag(Qt.FramelessWindowHint, True)
         self.setFocusPolicy(Qt.StrongFocus)
+
+        self.close_button = QPushButton("✕")
+        self.close_button.setObjectName("videoCloseButton")
+        self.close_button.setToolTip("Close TV view")
+        self.close_button.setFixedSize(44, 44)
+        self.close_button.setFocusPolicy(Qt.NoFocus)
+        self.close_button.setStyleSheet("""
+            QPushButton#videoCloseButton {
+                background-color: rgba(0, 0, 0, 160);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 140);
+                border-radius: 22px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            QPushButton#videoCloseButton:hover {
+                background-color: rgba(92, 0, 0, 200);
+            }
+        """)
+        self.close_button.clicked.connect(self._request_close)
+        self.close_button.raise_()
+        self.close_button.hide()
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -18576,6 +18599,8 @@ class VideoWindow(QWidget):
     def resizeEvent(self, event):
         self.update_special_view_geometry()
         self.static.setGeometry(self.video_surface.rect())
+        if self.close_button is not None:
+            self.close_button.setGeometry(self.width() - 56, 12, 44, 44)
         self.channel_overlay.setGeometry(self.video_surface.rect())
         self.channel_bug.setGeometry(self.video_surface.rect())
         self.guide_overlay.setGeometry(self.video_surface.rect())
@@ -18590,6 +18615,14 @@ class VideoWindow(QWidget):
         self.alert_marquee.setGeometry(0, 0, vs.width(), 36)
         self.alert_fullscreen.setGeometry(vs)
         super().resizeEvent(event)
+
+    def showEvent(self, event):
+        self.close_button.show()
+        super().showEvent(event)
+
+    def hideEvent(self, event):
+        self.close_button.hide()
+        super().hideEvent(event)
 
     def update_special_view_geometry(self):
         rect = self.video_surface.display_rect()
@@ -18645,6 +18678,9 @@ class VideoWindow(QWidget):
             for child in (self.video_surface, self.guide_overlay, self.on_demand_overlay):
                 child.unsetCursor()
         self._cursor_hide_timer.start()
+
+    def _request_close(self):
+        self.closeRequested.emit()
 
     def eventFilter(self, obj, event):
         if event.type() in (QEvent.MouseMove, QEvent.MouseButtonPress):
@@ -18737,6 +18773,9 @@ class VideoWindow(QWidget):
                 if key == Qt.Key_M:
                     self.guideSettingsRequested.emit()
                     return True
+            if key == Qt.Key_Escape:
+                self.closeRequested.emit()
+                return True
         return super().eventFilter(obj, event)
 
     def hide_special_views(self):
@@ -23990,6 +24029,7 @@ class ChannelSurfer(QWidget):
         self.video_window.menu_overlay.uiScaleStepRequested.connect(self.step_guide_scale)
         self.video_window.menu_overlay.diagnosticReadoutRequested.connect(self.show_diagnostic_readout)
         self.video_window.menu_overlay.closeRequested.connect(self.close_standalone_menu)
+        self.video_window.closeRequested.connect(self.close_tv_window)
         self.video_window.guide_overlay.themeStepRequested.connect(self.step_theme)
         self.video_window.guide_overlay.skinStepRequested.connect(self.step_skin)
         self.video_window.guide_overlay.profileStepRequested.connect(self.step_profile)
@@ -32378,6 +32418,19 @@ class ChannelSurfer(QWidget):
         self.media_thumbnail_cache.pop(cache_key, None)
         if self.video_window.on_demand_overlay.isVisible() and self.on_demand_view == "detail":
             self.refresh_on_demand()
+
+    def close_tv_window(self):
+        if getattr(self, "_closing", False):
+            return
+        self.stop_player()
+        self.video_window.alert_marquee.hide()
+        self.video_window.alert_fullscreen.hide()
+        self.video_window.hide()
+        self.show()
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
+        self.setFocus(Qt.ActiveWindowFocusReason)
 
     def update_next_up_overlay(self):
         if self.playback_mode != "ondemand" or not self.current_on_demand_path:
