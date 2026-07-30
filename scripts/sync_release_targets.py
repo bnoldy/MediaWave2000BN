@@ -104,11 +104,12 @@ def _sync_file(src: Path, dst: Path, label: str) -> None:
 
 def _sync_text(text: str, dst: Path, label: str) -> None:
     """Write text only when content changed, mirroring _sync_file output."""
-    src_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    normalized_text = text.replace("\r\n", "\n")
+    src_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()
     if dst.exists() and sha256(dst) == src_hash:
         print(f"  ✓ {label} already in sync — no copy needed")
         return
-    dst.write_text(text, encoding="utf-8")
+    dst.write_text(normalized_text, encoding="utf-8", newline="\n")
     if sha256(dst) != src_hash:
         fail(f"Post-write checksum mismatch for {label}!")
     print(f"  ✓ {label} synced  ({dst.stat().st_size:,} bytes)")

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.0
+
+Stable release.
+
+### Included
+
+- Stable release of MediaWave2000 and MediaWave Converter
+- Fullscreen TV player close controls now support Escape and extended-monitor maximize behavior
+- Window management improvements for normal/maximized/true fullscreen mode
+- Updated release packaging and build kit sync support
+
 ## v0.1.0-beta
 
 Initial private beta.
