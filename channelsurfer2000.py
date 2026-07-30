@@ -18435,8 +18435,10 @@ class VideoWindow(QWidget):
         super().__init__()
         self.setWindowTitle(f"{APP_NAME} Player")
         self.setStyleSheet("background-color: black;")
-        self.setWindowFlag(Qt.FramelessWindowHint, True)
+        self.setWindowFlags(Qt.Window | Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint)
         self.setFocusPolicy(Qt.StrongFocus)
+        self._is_true_fullscreen = False
+        self._restore_geometry = QRect()
 
         self.close_button = QPushButton("✕")
         self.close_button.setObjectName("videoCloseButton")
@@ -18457,7 +18459,6 @@ class VideoWindow(QWidget):
             }
         """)
         self.close_button.clicked.connect(self._request_close)
-        self.close_button.raise_()
         self.close_button.hide()
 
         layout = QVBoxLayout()
@@ -18617,7 +18618,7 @@ class VideoWindow(QWidget):
         super().resizeEvent(event)
 
     def showEvent(self, event):
-        self.close_button.show()
+        self.close_button.hide()
         super().showEvent(event)
 
     def hideEvent(self, event):
@@ -18681,6 +18682,39 @@ class VideoWindow(QWidget):
 
     def _request_close(self):
         self.closeRequested.emit()
+
+    def is_true_fullscreen(self):
+        return self._is_true_fullscreen
+
+    def toggle_true_fullscreen(self):
+        if self._is_true_fullscreen:
+            self.exit_true_fullscreen()
+        else:
+            self.enter_true_fullscreen()
+
+    def enter_true_fullscreen(self):
+        if self._is_true_fullscreen:
+            return
+        self._restore_geometry = self.geometry()
+        self._is_true_fullscreen = True
+        self.hide()
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.showFullScreen()
+        self.close_button.hide()
+
+    def exit_true_fullscreen(self):
+        if not self._is_true_fullscreen:
+            return
+        self._is_true_fullscreen = False
+        self.hide()
+        self.setWindowFlags(Qt.Window | Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint)
+        self.showNormal()
+        if self._restore_geometry and not self._restore_geometry.isNull():
+            self.setGeometry(self._restore_geometry)
+        self.raise_()
+        self.activateWindow()
+        self.setFocus(Qt.ActiveWindowFocusReason)
+        self.close_button.hide()
 
     def eventFilter(self, obj, event):
         if event.type() in (QEvent.MouseMove, QEvent.MouseButtonPress):
@@ -18751,6 +18785,9 @@ class VideoWindow(QWidget):
                 if key == Qt.Key_M:
                     self.infoSettingsRequested.emit()
                     return True
+            if key == Qt.Key_F11:
+                self.toggle_true_fullscreen()
+                return True
             if self.guide_overlay.isVisible():
                 if key == Qt.Key_Left:
                     self.guideLeftRequested.emit()
@@ -25266,7 +25303,7 @@ class ChannelSurfer(QWidget):
 
         if was_visible and self.channels:
             self.video_window.show()
-            self.video_window.showFullScreen()
+            self.video_window.showMaximized()
             self.video_window.raise_()
             self.video_window.activateWindow()
             self.video_window.setFocus(Qt.ActiveWindowFocusReason)
@@ -27720,7 +27757,7 @@ class ChannelSurfer(QWidget):
             if screen is not None:
                 self.video_window.setGeometry(screen.geometry())
             self.video_window.show()
-            self.video_window.showFullScreen()
+            self.video_window.showMaximized()
             if _should_activate:
                 self.video_window.raise_()
                 self.video_window.activateWindow()
@@ -27762,7 +27799,7 @@ class ChannelSurfer(QWidget):
             if screen is not None:
                 self.video_window.setGeometry(screen.geometry())
             self.video_window.show()
-            self.video_window.showFullScreen()
+            self.video_window.showMaximized()
             if _should_activate:
                 self.video_window.raise_()
                 self.video_window.activateWindow()
@@ -27801,7 +27838,7 @@ class ChannelSurfer(QWidget):
             if screen is not None:
                 self.video_window.setGeometry(screen.geometry())
             self.video_window.show()
-            self.video_window.showFullScreen()
+            self.video_window.showMaximized()
             if _should_activate:
                 self.video_window.raise_()
                 self.video_window.activateWindow()
@@ -27923,7 +27960,7 @@ class ChannelSurfer(QWidget):
         if screen is not None:
             self.video_window.setGeometry(screen.geometry())
         self.video_window.show()
-        self.video_window.showFullScreen()
+        self.video_window.showMaximized()
         if _should_activate:
             self.video_window.raise_()
             self.video_window.activateWindow()
@@ -31448,7 +31485,7 @@ class ChannelSurfer(QWidget):
                 if screen is not None:
                     self.video_window.setGeometry(screen.geometry())
                 self.video_window.show()
-                self.video_window.showFullScreen()
+                self.video_window.showMaximized()
                 self.video_window.raise_()
                 self.video_window.activateWindow()
                 self.video_window.setFocus(Qt.ActiveWindowFocusReason)
@@ -32078,10 +32115,7 @@ class ChannelSurfer(QWidget):
         if screen is not None:
             self.video_window.setGeometry(screen.geometry())
         self.video_window.show()
-        self.video_window.showFullScreen()
-        self.video_window.raise_()
-        self.video_window.activateWindow()
-        self.video_window.setFocus(Qt.ActiveWindowFocusReason)
+        self.video_window.showMaximized()
 
         self.stop_player()
         self.playback_mode = "ondemand"

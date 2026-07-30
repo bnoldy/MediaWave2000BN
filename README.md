@@ -86,6 +86,8 @@ Hit **Choose Catalog**, point it at your folder, press **Watch TV**.
 - **[V]** - Vault
 - **[I]** - Info
 - **[Arrow Keys]** - Move Cursor in Menus
+- **[F11]** - Toggle Fullscreen
+- **[ESC]** - Close TV Window
 
 ---
 
