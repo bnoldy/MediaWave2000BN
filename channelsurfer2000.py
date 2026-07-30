@@ -107,7 +107,7 @@ class SleepPreventer:
 
 
 APP_NAME = "MediaWave2000"
-APP_VERSION = "0.1.0-beta"
+APP_VERSION = "0.1.0"
 VIDEO_EXTS = (".mp4", ".mkv", ".avi", ".mov")
 
 # ── Startup screen fixed palette ──────────────────────────────────────────────
@@ -27753,11 +27753,14 @@ class ChannelSurfer(QWidget):
             self.current_on_demand_path = None
             self.hide_info_banner()
 
-            screen = self.screen() or QApplication.primaryScreen()
-            if screen is not None:
-                self.video_window.setGeometry(screen.geometry())
-            self.video_window.show()
-            self.video_window.showMaximized()
+            if not self.video_window.isVisible():
+                screen = self.screen() or QApplication.primaryScreen()
+                if screen is not None:
+                    self.video_window.setGeometry(screen.geometry())
+                self.video_window.show()
+                self.video_window.showMaximized()
+            else:
+                self.video_window.show()
             if _should_activate:
                 self.video_window.raise_()
                 self.video_window.activateWindow()
@@ -27795,11 +27798,14 @@ class ChannelSurfer(QWidget):
             self.current_on_demand_path = None
             self.hide_info_banner()
 
-            screen = self.screen() or QApplication.primaryScreen()
-            if screen is not None:
-                self.video_window.setGeometry(screen.geometry())
-            self.video_window.show()
-            self.video_window.showMaximized()
+            if not self.video_window.isVisible():
+                screen = self.screen() or QApplication.primaryScreen()
+                if screen is not None:
+                    self.video_window.setGeometry(screen.geometry())
+                self.video_window.show()
+                self.video_window.showMaximized()
+            else:
+                self.video_window.show()
             if _should_activate:
                 self.video_window.raise_()
                 self.video_window.activateWindow()
@@ -27834,11 +27840,14 @@ class ChannelSurfer(QWidget):
             self.current_on_demand_path = None
             self.hide_info_banner()
 
-            screen = self.screen() or QApplication.primaryScreen()
-            if screen is not None:
-                self.video_window.setGeometry(screen.geometry())
-            self.video_window.show()
-            self.video_window.showMaximized()
+            if not self.video_window.isVisible():
+                screen = self.screen() or QApplication.primaryScreen()
+                if screen is not None:
+                    self.video_window.setGeometry(screen.geometry())
+                self.video_window.show()
+                self.video_window.showMaximized()
+            else:
+                self.video_window.show()
             if _should_activate:
                 self.video_window.raise_()
                 self.video_window.activateWindow()
@@ -27956,11 +27965,14 @@ class ChannelSurfer(QWidget):
         self.current_on_demand_path = None
         self.hide_info_banner()
 
-        screen = self.screen() or QApplication.primaryScreen()
-        if screen is not None:
-            self.video_window.setGeometry(screen.geometry())
-        self.video_window.show()
-        self.video_window.showMaximized()
+        if not self.video_window.isVisible():
+            screen = self.screen() or QApplication.primaryScreen()
+            if screen is not None:
+                self.video_window.setGeometry(screen.geometry())
+            self.video_window.show()
+            self.video_window.showMaximized()
+        else:
+            self.video_window.show()
         if _should_activate:
             self.video_window.raise_()
             self.video_window.activateWindow()
@@ -32111,11 +32123,14 @@ class ChannelSurfer(QWidget):
         self.hide_on_demand()
         self.video_window.next_up_overlay.hide()
         self.next_up_state = None
-        screen = self.screen() or QApplication.primaryScreen()
-        if screen is not None:
-            self.video_window.setGeometry(screen.geometry())
-        self.video_window.show()
-        self.video_window.showMaximized()
+        if not self.video_window.isVisible():
+            screen = self.screen() or QApplication.primaryScreen()
+            if screen is not None:
+                self.video_window.setGeometry(screen.geometry())
+            self.video_window.show()
+            self.video_window.showMaximized()
+        else:
+            self.video_window.show()
 
         self.stop_player()
         self.playback_mode = "ondemand"
